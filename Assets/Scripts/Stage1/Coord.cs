@@ -24,7 +24,7 @@ namespace TS
         public Coord(int q, int r, int s) 
         { 
             this.q = q; this.r = r; this.s = s; 
-            worldPosition = new Vector3(q + 0.5f * r, 0, -Mathf.Sqrt(3) / 2 * r) * 2*GridManager.cellSize; //new Vector3(q * Mathf.Sqrt(3) / 2, 0, -(float)r - ((float)q / 2)) * 2 * GridManager.cellSize; //new Vector3(q+0.5f*r, 0, Mathf.Sqrt(3) /2*r) * GridManager.cellSize;
+            worldPosition = new Vector3(q + 0.5f * r, 0, -Mathf.Sqrt(3) / 2 * r) * 2*GridManager.s_cellSize; //new Vector3(q * Mathf.Sqrt(3) / 2, 0, -(float)r - ((float)q / 2)) * 2 * GridManager.s_cellSize; //new Vector3(q+0.5f*r, 0, Mathf.Sqrt(3) /2*r) * GridManager.s_cellSize;
         }
 
         public static Coord Direction(int dirIndex)

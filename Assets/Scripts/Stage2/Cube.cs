@@ -16,13 +16,21 @@ namespace TS
         public Cube(List<Vertex> vertices)
         {
             this.vertices = vertices;
-            foreach (Vertex vertex in vertices) {
+            foreach (Vertex vertex in vertices)
+            {
                 centerPosition += vertex.currentPosition;
                 vertex.SwitchState += UpdateBit;
+
+                //Stage3
+                vertex.AddNeighborVertices += AddNeighborVertices;
+
             }
-            centerPosition /=  8;//可换成右移
+            centerPosition /= 8;//可换成右移
 
         }
+
+
+
         public static List<Cube> GetCubes(List<SubdivideQuad> subdivideQuads,int height)
         {
 
@@ -58,7 +66,6 @@ namespace TS
             for(int i = 0; i < 8; i++)
                 new_bit += System.Convert.ToInt32(vertices[i].State);
             bit = new_bit;
-            Debug.Log(bit);
 
             if (bit == "00000000" || bit == "11111111")
             {
@@ -74,19 +81,39 @@ namespace TS
                 if (G_Module != null)
                 {
                     G_Module.GetComponent<MeshFilter>().mesh = M_Module;
-                    G_Module.GetComponent<MeshRenderer>().material = GridManager.material;
+                    G_Module.GetComponent<MeshRenderer>().material = GridManager.s_moduleMaterial;
                 }
                 else
                 {
                     G_Module = new GameObject(bit, typeof(MeshFilter), typeof(MeshRenderer));
-                    G_Module.transform.SetParent(GridManager.worldCenter);
+                    G_Module.transform.SetParent(GridManager.s_worldCenter);
                     G_Module.transform.localPosition = centerPosition;
                     G_Module.GetComponent<MeshFilter>().mesh = M_Module;
-                    G_Module.GetComponent<MeshRenderer>().material = GridManager.material;
+                    G_Module.GetComponent<MeshRenderer>().material = GridManager.s_moduleMaterial;
                 }
             }
 
 
         }
+        //Stage3
+        private Vertex GetNextVertex(Vertex vertex)
+        {
+            //差1
+            int vertexIndex = vertices.IndexOf(vertex);
+            return vertices[(vertexIndex+1)%vertices.Count];
+        }
+        private Vertex GetUpDownVertex(Vertex vertex)
+        {
+            //上下差4
+            int vertexIndex = vertices.IndexOf(vertex);
+            return vertices[(vertexIndex+4)%vertices.Count];
+        }
+        private void AddNeighborVertices(Vertex vertex,HashSet<Vertex> neighborVertices)
+        {
+            neighborVertices.Add(GetNextVertex(vertex));
+            neighborVertices.Add(GetUpDownVertex(vertex));
+        }
+        
+
     }
 }

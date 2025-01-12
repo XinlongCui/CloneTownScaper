@@ -51,7 +51,7 @@ namespace TS
 
                 //可以看到上面使用的currentPostion是世界坐标，我们人需要变回局部坐标，则需要减去；
                 Vector3 centerPosition = (cube.vertices[0].currentPosition + cube.vertices[1].currentPosition + cube.vertices[2].currentPosition + cube.vertices[3].currentPosition) / 4;
-                vertices[i] = Vector3.Lerp(x_cb, x_da, (vertices[i].z + 0.5f)) + Vector3.up * vertices[i].y * GridManager.cellHeight - centerPosition;//cb-->da为增大方向
+                vertices[i] = Vector3.Lerp(x_cb, x_da, (vertices[i].z + 0.5f)) + Vector3.up * vertices[i].y * GridManager.s_cellHeight - centerPosition;//cb-->da为增大方向
                 //                                                               前面都是平面上，加上这部分才是立体的 
             }
             M_Module.vertices = vertices;
@@ -77,7 +77,7 @@ namespace TS
 
                 if (!allBits.Contains(FlipName(bit)))
                 {
-                    Debug.Log("has mirror " + bit);
+                    //Debug.Log("has mirror " + bit);
                     bit = FlipName(bit);
                     M_Module = DeriveFromMirror(M_Module);
                     allBits = GetModulesByRotation(bit, M_Module);
@@ -171,7 +171,6 @@ namespace TS
             return M_NewModule;
         }
 
-        static int i = 3;
         public static HashSet<string> GetModulesByRotation(string bit,Mesh M_Module)
         {
             HashSet<string> allBits = new HashSet<string>();
@@ -193,10 +192,10 @@ namespace TS
 
                         //To see所有可能
                         //GameObject G_Module = new GameObject(new_bit, typeof(MeshFilter), typeof(MeshRenderer));
-                        //G_Module.transform.SetParent(GridManager.worldCenter);
+                        //G_Module.transform.SetParent(GridManager.s_worldCenter);
                         //G_Module.transform.localPosition = Vector3.up*(i++)*2;
                         //G_Module.GetComponent<MeshFilter>().mesh = DeriveFromRotation(M_Module, s_RotationInfo, s_YRotation);
-                        //G_Module.GetComponent<MeshRenderer>().material = GridManager.material;
+                        //G_Module.GetComponent<MeshRenderer>().s_moduleMaterial = GridManager.s_moduleMaterial;
                     }
                 }
             }

@@ -13,7 +13,7 @@ namespace TS
         #region Configs And Attributes
         //Stage1
         public int radius=3;
-        public static int cellSize = 1;
+        public static int s_cellSize = 1;
         public int relaxTimes = 10;
 
         public List<Coord> coords;
@@ -21,23 +21,25 @@ namespace TS
         public List<Quad> quads;
         public List<SubdivideQuad> subdivideQuads;
         //Stage2
-        public static Transform worldCenter;//所有的module都挂在这上面
+        public static Transform s_worldCenter;//所有的module都挂在这上面
 
         public Material moduleMaterial;
-        public static Material material;
+        public static Material s_moduleMaterial;
         public GameObject G_Modules;
 
-        public static int cellHeight = 1;
+        public static int s_cellHeight = 1;
         public int height = 5;
         public List<Cube> cubes;
         //--------Stage2 test---------
         public GameObject activeVertex;
         public GameObject unActiveVertex;
 
+        //Stage3
+
+
         #endregion
         private void Awake()
         {
-            
             //Stage1
             coords = Coord.MultiRings(radius);
             triangles = Triangle.MultiRings(coords, radius);
@@ -56,14 +58,15 @@ namespace TS
                 }
             }
             //Stage2
-            GridManager.material = moduleMaterial;
-            if (worldCenter == null) worldCenter = new GameObject().transform;
-            worldCenter.transform.position = Vector3.zero;  
+            GridManager.s_moduleMaterial = moduleMaterial;
+            if (s_worldCenter == null) s_worldCenter = new GameObject("WorldCenter").transform;
+            s_worldCenter.transform.position = Vector3.zero;  
             
             Modules.SetAllModules(G_Modules);
             cubes = Cube.GetCubes(subdivideQuads,height);
 
 
+            //Stage3
 
 
 
@@ -73,22 +76,23 @@ namespace TS
 
         private void Update()
         {
-            foreach(KeyValuePair<Vertex,List<Vertex>> pair in Cube.verticesOfDifferentY)
-            {
-                foreach(Vertex vertex in pair.Value)
-                {
-                    if(vertex.State == false && Vector3.Distance(vertex.currentPosition, activeVertex.transform.position) < 0.5f)
-                    {
-                        Debug.LogWarning("Active");
-                        vertex.State = true;
-                    }
-                    else if(vertex.State == true && Vector3.Distance(vertex.currentPosition, unActiveVertex.transform.position) < 0.5f)
-                    {
-                        Debug.LogWarning("UnActive");
-                        vertex.State = false;
-                    }
-                }
-            }
+            //Stage2 test
+            //foreach(KeyValuePair<Vertex,List<Vertex>> pair in Cube.verticesOfDifferentY)
+            //{
+            //    foreach(Vertex vertex in pair.Value)
+            //    {
+            //        if(vertex.State == false && Vector3.Distance(vertex.currentPosition, activeVertex.transform.position) < 0.5f)
+            //        {
+            //            Debug.LogWarning("Active");
+            //            vertex.State = true;
+            //        }
+            //        else if(vertex.State == true && Vector3.Distance(vertex.currentPosition, unActiveVertex.transform.position) < 0.5f)
+            //        {
+            //            Debug.LogWarning("UnActive");
+            //            vertex.State = false;
+            //        }
+            //    }
+            //}
         }
 
         private void OnDrawGizmos()
