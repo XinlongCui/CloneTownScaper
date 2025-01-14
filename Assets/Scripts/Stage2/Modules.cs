@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Xml.Linq;
 using Unity.VisualScripting;
@@ -19,7 +20,7 @@ namespace TS
     public class Modules
     {
         public GameObject G_Modules;
-        public static Dictionary<string,List<Mesh>> modules = new Dictionary<string,List<Mesh>>();
+        public static Dictionary<string,List<Module>> modules = new Dictionary<string,List<Module>>();
 
         public static List<S_RotationInfo> s_RotationInfos = new List<S_RotationInfo>
         {
@@ -32,18 +33,17 @@ namespace TS
             new S_RotationInfo {axis=Vector3.forward,rotationDirection = 1,times=1},
             new S_RotationInfo {axis=Vector3.forward,rotationDirection = -1,times=1},
         };
-        
-        public static List<Mesh> GetPossiableModules(string bit)
+        public static List<Module> GetPossiableModules(string bit)
         {
-            return modules[bit];
+            return modules[bit].ConvertAll(x=>x);
         }
-        public static void DeformModule(Mesh M_Module,Cube cube)
+        public static void DeformMesh(Mesh mesh,Cube cube)
         {
             //      3d-->0a
-            //         |
+            //           |
             //      2c<--1b    ！！！同时这里也完成了坐标的映射（0对应a，1对应b。。。）
             //横坐标为x轴，纵为z轴,
-            Vector3[] vertices = M_Module.vertices;
+            Vector3[] vertices = mesh.vertices;
             for (int i = 0; i < vertices.Length; i++) {
                 //这里mesh的顶点坐标均为局部坐标系，我们的mesh大小此时为1，这样的话mesh所有点的局部坐标范围为[-0.5至0.5];
                 Vector3 x_da = Vector3.Lerp(cube.vertices[3].currentPosition, cube.vertices[0].currentPosition, (vertices[i].x + 0.5f));//!!!!!!均是从小到大，d-->a为增大方向
@@ -54,37 +54,34 @@ namespace TS
                 vertices[i] = Vector3.Lerp(x_cb, x_da, (vertices[i].z + 0.5f)) + Vector3.up * vertices[i].y * GridManager.s_cellHeight - centerPosition;//cb-->da为增大方向
                 //                                                               前面都是平面上，加上这部分才是立体的 
             }
-            M_Module.vertices = vertices;
+            mesh.vertices = vertices;
 
-            M_Module.RecalculateBounds();
-            M_Module.RecalculateNormals();
+            mesh.RecalculateBounds();
+            mesh.RecalculateNormals();
         }
-
         public static void SetAllModules(GameObject G_Modules)
         {
-            for(int i = 1; i < 256; i++)
+            for(int i = 0; i < 256; i++)
             {
                 string bit = Convert.ToString(i, 2).PadLeft(8, '0');
-                modules[bit] = new List<Mesh>();
+                modules[bit] = new List<Module>();
             }
-
             foreach(Transform childTransform in G_Modules.transform)
             {
                 string bit = childTransform.name;
-                Mesh M_Module = childTransform.GetComponent<MeshFilter>().sharedMesh;
+                Mesh mesh = childTransform.GetComponent<MeshFilter>().sharedMesh;
 
-                HashSet<string> allBits = GetModulesByRotation(bit, M_Module);
+                HashSet<string> allBits = GetModulesByRotation(bit, mesh);
 
                 if (!allBits.Contains(FlipName(bit)))
                 {
                     //Debug.Log("has mirror " + bit);
                     bit = FlipName(bit);
-                    M_Module = DeriveFromMirror(M_Module);
-                    allBits = GetModulesByRotation(bit, M_Module);
+                    mesh = DeriveFromMirror(mesh);
+                    allBits = GetModulesByRotation(bit, mesh);
                 }
             }
         }
-
         public static string RotationName(string name,S_RotationInfo s_RotationInfo) 
         {
             //以UNity中坐标系为基础，旋转符合左手系(大拇指所指方向为轴，四指弯曲方向为旋转方向)
@@ -119,14 +116,14 @@ namespace TS
             //      2<--1
             return name[3].ToString() + name[2] + name[1] + name[0] + name[7]  + name[6] + name[5] + name[4];
         }
-        public static Mesh DeriveFromRotation(Mesh M_Module,S_RotationInfo s_RotationInfo, S_RotationInfo s_YRotation)
+        public static Mesh DeriveFromRotation(Mesh mesh,S_RotationInfo s_RotationInfo, S_RotationInfo s_YRotation)
         {
             Quaternion baseRotation = Quaternion.AngleAxis(90f*s_RotationInfo.rotationDirection*s_RotationInfo.times, s_RotationInfo.axis);
             Quaternion yRotation = Quaternion.AngleAxis(90f*s_YRotation.times, s_YRotation.axis);
             Quaternion rotation = yRotation * baseRotation;
 
             // 获取原始Mesh的顶点
-            Vector3[] originalVertices = M_Module.vertices;
+            Vector3[] originalVertices = mesh.vertices;
             // 创建一个新的顶点数组
             Vector3[] rotatedVertices = new Vector3[originalVertices.Length];
             // 对每个顶点应用旋转
@@ -135,22 +132,22 @@ namespace TS
                 rotatedVertices[i] = rotation * originalVertices[i];
             }
             // 创建一个新的Mesh
-            Mesh M_NewModule = new Mesh
+            Mesh newMesh = new Mesh
             {
                 vertices = rotatedVertices,
-                triangles = M_Module.triangles, // 三角形索引不变
+                triangles = mesh.triangles, // 三角形索引不变
                 //uv = M_Module.uv // UV坐标保持不变
             };
 
-            M_NewModule.RecalculateBounds();
-            M_NewModule.RecalculateNormals();
-            return M_NewModule;
+            newMesh.RecalculateBounds();
+            newMesh.RecalculateNormals();
+            return newMesh;
 
         }
-        public static Mesh DeriveFromMirror(Mesh M_Module)
+        public static Mesh DeriveFromMirror(Mesh mesh)
         {
             // 获取原始Mesh的顶点
-            Vector3[] originalVertices = M_Module.vertices;
+            Vector3[] originalVertices = mesh.vertices;
             // 创建一个新的顶点数组
             Vector3[] mirrorVertices = new Vector3[originalVertices.Length];
             // 对每个顶点获取镜像
@@ -160,18 +157,17 @@ namespace TS
             }
 
             // 创建一个新的Mesh
-            Mesh M_NewModule = new Mesh
+            Mesh newMesh = new Mesh
             {
                 vertices = mirrorVertices,
-                triangles = M_Module.triangles.Reverse().ToArray(), //镜像操作会导致面片的法线方向反转 
+                triangles = mesh.triangles.Reverse().ToArray(), //镜像操作会导致面片的法线方向反转 
                 //uv = M_Module.uv // UV坐标保持不变
             };
-            M_NewModule.RecalculateBounds();
-            M_NewModule.RecalculateNormals();
-            return M_NewModule;
+            newMesh.RecalculateBounds();
+            newMesh.RecalculateNormals();
+            return newMesh;
         }
-
-        public static HashSet<string> GetModulesByRotation(string bit,Mesh M_Module)
+        public static HashSet<string> GetModulesByRotation(string bit,Mesh mesh)
         {
             HashSet<string> allBits = new HashSet<string>();
 
@@ -188,7 +184,12 @@ namespace TS
                     {
                         allBits.Add(new_bit);
                         if (modules[new_bit].Count > 0) Debug.Log("Repeated " + new_bit);//不可能有重复的
-                        modules[new_bit].Add(DeriveFromRotation(M_Module, s_RotationInfo, s_YRotation));
+
+                        Module module = new Module();
+                        module.mesh = DeriveFromRotation(mesh, s_RotationInfo, s_YRotation);
+                        module.mesh.name = new_bit;
+
+                        modules[new_bit].Add(module);
 
                         //To see所有可能
                         //GameObject G_Module = new GameObject(new_bit, typeof(MeshFilter), typeof(MeshRenderer));
@@ -199,9 +200,26 @@ namespace TS
                     }
                 }
             }
-
             return allBits;
         }
 
+
+        //Stage4
+        public static void AddMoreModules(GameObject G_MoreModules)
+        {
+            foreach (Transform childTransform in G_MoreModules.transform)
+            {
+                string bit = childTransform.name.Substring(0,8);
+                string sockets = childTransform.name.Substring(9);
+                Mesh mesh = childTransform.GetComponent<MeshFilter>().sharedMesh;
+
+                Module module = new Module();
+                module.mesh = mesh;
+                module.sockets = new List<string>() { sockets[0].ToString(), sockets[1].ToString(), sockets[2].ToString(),
+                                                    sockets[3].ToString(), sockets[4].ToString(), sockets[5].ToString(),};
+                module.mesh.name = bit;
+                modules[bit].Add(module);
+            }
+        }
     }
 }

@@ -37,6 +37,9 @@ namespace TS
         //Stage3
 
 
+        //Stage4
+        public GameObject G_MoreModules;
+
         #endregion
         private void Awake()
         {
@@ -63,13 +66,16 @@ namespace TS
             s_worldCenter.transform.position = Vector3.zero;  
             
             Modules.SetAllModules(G_Modules);
+            Modules.AddMoreModules(G_MoreModules);//stage4
             cubes = Cube.GetCubes(subdivideQuads,height);
 
 
             //Stage3
 
 
-
+            //Stage4
+            int index = 0;
+            foreach(Cube cube in cubes) { cube.index = index++; }
             GC.Collect();
 
         }

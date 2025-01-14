@@ -14,7 +14,7 @@ namespace TS
         public int y;
         public event Action SwitchState;
         bool _state = false;
-        public bool State { get { return _state; } set { _state = value; SwitchState?.Invoke(); } }
+        public bool State { get { return _state; } set { _state = value; SwitchState?.Invoke(); NeedCollapse?.Invoke(this); } }
 
         public Vertex(Vector3 initialPosition, int y=0)
         {
@@ -38,11 +38,24 @@ namespace TS
             AddNeighborVertices?.Invoke(this,neighborVertices);
         }
 
-        
-        
+        //Stage4
+        public event Action<HashSet<Cube>> SameVertex;
+        public void HasSameVertex(HashSet<Cube> hasSameVertex)
+        {
+            SameVertex?.Invoke(hasSameVertex);
+        }
+        public event Action SameVertexCount;
+        public void RestSameVertexCount()
+        {
+            SameVertexCount?.Invoke();
+        }
 
+        public event Action<HashSet<Cube>> GoingToCollapseCubes;
+        public void GetGoingToCollapseCube(HashSet<Cube> goingToCollapseCubes)
+        {
+            GoingToCollapseCubes?.Invoke(goingToCollapseCubes);
+        }
 
-
-
+         public static event Action<Vertex> NeedCollapse;//通知waveCollapseFunction可以开始了
     }
 }

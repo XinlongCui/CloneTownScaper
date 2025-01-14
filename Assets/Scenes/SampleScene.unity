@@ -504,6 +504,16 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4731971540591262176, guid: 567d07039dcda62478faa41ae3fb7c99,
         type: 3}
+      propertyPath: height
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4731971540591262176, guid: 567d07039dcda62478faa41ae3fb7c99,
+        type: 3}
+      propertyPath: radius
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4731971540591262176, guid: 567d07039dcda62478faa41ae3fb7c99,
+        type: 3}
       propertyPath: activeVertex
       value: 
       objectReference: {fileID: 2554148597048047132, guid: f7c72ac3caf85ba40b9ae0354a3ee9fb,

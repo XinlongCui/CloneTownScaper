@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 233028961763481253}
   - component: {fileID: 4731971540591262176}
   - component: {fileID: 5818718644179678724}
+  - component: {fileID: 3452453324427440194}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -51,8 +52,12 @@ MonoBehaviour:
   G_Modules: {fileID: 919132149155446097, guid: f68c2f5d978d17641a21e1e6f2c51841,
     type: 3}
   height: 3
-  activeVertex: {fileID: 0}
-  unActiveVertex: {fileID: 0}
+  activeVertex: {fileID: 2554148597048047132, guid: f7c72ac3caf85ba40b9ae0354a3ee9fb,
+    type: 3}
+  unActiveVertex: {fileID: 1377751946384451143, guid: ae073cc352de04b41bf5e0d03e1ee455,
+    type: 3}
+  G_MoreModules: {fileID: 919132149155446097, guid: 7aa1514efffabe443b50a7fe4cb18f4f,
+    type: 3}
 --- !u!114 &5818718644179678724
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -74,3 +79,16 @@ MonoBehaviour:
   indicatorNotChoosingMaterial: {fileID: 2100000, guid: 67c323b81f28f0b46b13130864fafe17,
     type: 2}
   soundEffect: {fileID: 8300000, guid: 0ceef3b68920b074a8cc6602fb4ee6e2, type: 3}
+  backgroundSound: {fileID: 0}
+--- !u!114 &3452453324427440194
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 264961047567158141}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 291ebf02b7c2a864498fee7a86ebe3bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
