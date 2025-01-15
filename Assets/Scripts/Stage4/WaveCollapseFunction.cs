@@ -12,38 +12,27 @@ namespace TS
         {
             Vertex.NeedCollapse += NeedCollapse;
         }
-        int i = 0;
-
         private void NeedCollapse(Vertex collapseVertex)
         {
             collapseVertex.GetGoingToCollapseCube(collapseCubes);
             //先尝试小范围
-            //GetSmallRangeCollapseCubes(collapseCubes);
-            //Debug.Log($"SmallRange {collapseCubes.Count}");
-            //bool isSmallRangeTrySucceed = WFC();
-            //Debug.Log($"isSmallRangeTrySucceed {isSmallRangeTrySucceed}");
-
+            GetSmallRangeCollapseCubes(collapseCubes);
+            bool isSmallRangeTrySucceed = WFC();
             //所有的与之相连的大范围
-            bool isSmallRangeTrySucceed = false;
             if (!isSmallRangeTrySucceed)
             {
                 GetBigRangeCollapseCubes(collapseCubes.First());
-                Debug.Log($"BigRange {collapseCubes.Count}");
                 bool isBigRangeTrySucceed = WFC();
-                Debug.Log($"isBigRangeTrySucceed {isBigRangeTrySucceed}");
             }
 
             history = new Stack<Operation>();
             collapseCubes = new HashSet<Cube>();
             propagateCubes = new Stack<Cube>();
             System.GC.Collect();
-
-            Debug.LogError("##############################################");
         }
 
 
         Stack<Operation> history = new Stack<Operation>();//用于回溯
-
         public HashSet<Cube> collapseCubes = new HashSet<Cube>();
         public Stack<Cube> propagateCubes = new Stack<Cube>();
         public bool WFC()
@@ -63,11 +52,9 @@ namespace TS
         }
         public bool Collapse()
         {
-            Debug.LogWarning("CCCC");
             Cube nowCollapseCube = GetMinPossibleModulesCube();
-            Debug.Log($"nowCollapseCube bit {nowCollapseCube.index} nowCollapseCube posuibleModulesCount {nowCollapseCube.possibleModules.Count}");
 
-            if (nowCollapseCube.bit == "00000000" || nowCollapseCube.bit == "11111111") { Debug.Log("00000000"); nowCollapseCube.SetG_Module(null); }
+            if (nowCollapseCube.bit == "00000000" || nowCollapseCube.bit == "11111111") { nowCollapseCube.SetG_Module(null); }
             else if (nowCollapseCube.possibleModules.Count == 0)//产生冲突
             {   
                 if (history.Count == 0 || history.Peek().opreatedCube != nowCollapseCube) {    
@@ -88,8 +75,7 @@ namespace TS
             }
             else
             {
-                Module randomModule = nowCollapseCube.possibleModules[Random.Range(0, nowCollapseCube.possibleModules.Count)];
-                Debug.Log($"nowCollapseCube {nowCollapseCube.index}choose {randomModule.mesh.name}_{randomModule.sockets[0].ToString() + randomModule.sockets[1] + randomModule.sockets[2] + randomModule.sockets[3] + randomModule.sockets[4] + randomModule.sockets[5]}");
+                Module randomModule = nowCollapseCube.possibleModules[Random.Range(0, nowCollapseCube.possibleModules.Count)];             
                 nowCollapseCube.SetG_Module(randomModule);
                 
                 //添加坍缩前cube的完整possibleModule
@@ -103,7 +89,7 @@ namespace TS
                     });
                 }
                 //添加 去除了某个产生冲突的possibleModule之后的 坍缩历史
-                nowCollapseCube.possibleModules.Remove(randomModule);//一旦确定一个，相当于剩下的都被移除了,如果只剩一个那么就空了
+                nowCollapseCube.possibleModules.Remove(randomModule);//一旦确定一个，相当于剩下的都被移除了
                 List<Module> removedModules = nowCollapseCube.possibleModules;
                 nowCollapseCube.possibleModules = new List<Module>() { randomModule };
                 history.Push(new Operation()
@@ -117,16 +103,12 @@ namespace TS
             propagateCubes.Push(nowCollapseCube);//即使是全零的也要加入，通过它找其邻居
             //移出坍缩队列
             collapseCubes.Remove(nowCollapseCube);
-            Debug.Log($"collapseCubes Remove {nowCollapseCube.index}");
-
             return true;
         }
         public void Propagate()
         {
-            Debug.LogWarning("PPPP");
             Cube nowPropagateCube = propagateCubes.Pop();
             List<Module> nowPropagateCubePossibleModules = nowPropagateCube.possibleModules;
-            Debug.Log($"nowPropagateCube bit {nowPropagateCube.index} nowPropagateCubePossibleModules {nowPropagateCubePossibleModules.Count}");
             if (nowPropagateCubePossibleModules.Count == 0) return;//因为传播导致没有可能的模块，这里不进行处理，会由坍缩捕捉到进行处理
 
             Dictionary<int, List<string>> allowedSockets = new Dictionary<int, List<string>>();//6个方向，每个方向上的sockets（可能有多个Module）
@@ -150,9 +132,7 @@ namespace TS
                 {
                     Module module = neighborCube.possibleModules[moduleIndex];
                     if (!allowedSockets[i].Contains(module.sockets[Module.socketCompareRules[i]]))
-                    {
-                        Debug.Log($"{nowPropagateCube.index}-->{neighborCube.index} now 第{i}个 {allowedSockets[i][0]} DonTMatch {module.sockets[Module.socketCompareRules[i]][0]}");
-                        Debug.Log($"neighbor Cube {neighborCube.index} removedModule {module.mesh.name}_{module.sockets[0].ToString()+module.sockets[1]+ module.sockets[2]+ module.sockets[3]+ module.sockets[4]+ module.sockets[5]}");
+                    {                     
                         removedModules.Add(module);
                         neighborCube.possibleModules.Remove(module);
                     }
@@ -163,7 +143,6 @@ namespace TS
                     propagateCubes.Push(neighborCube);
                     //如果不在坍缩队列中,加入坍缩队列
                     if(!collapseCubes.Contains(neighborCube)) collapseCubes.Add(neighborCube);
-
                     //添加传播历史
                     history.Push(new Operation()
                     {
@@ -176,7 +155,6 @@ namespace TS
         }
         public void Backtrack()
         {
-            Debug.LogError("BBBB");
             //坍缩操作之前保存坍缩cube的所有状态，用于 当待坍缩的cube的所有可能的module都会产生冲突时，返回上一级坍缩过程
             //因为在尝试待坍缩的cube的所有可能的module，产生冲突的module都已经移除了
             Operation collapseFailedOperation = history.Pop();
@@ -187,7 +165,6 @@ namespace TS
             {
                 Cube operatedCube = history.Peek().opreatedCube;
                 List<Module> removedModules = history.Pop().removedModules;
-
                 foreach (Module module in removedModules) {
                     operatedCube.possibleModules.Add(module);//将移除的Module重新添加回去（还原状态）
                 }
@@ -200,7 +177,6 @@ namespace TS
                 {
                     collapseCube.possibleModules.Add(module);//将移除的Module重新添加回去（还原状态）
                 }
-
                 collapseCubes.Add(collapseCube);//添加回去，再次尝试其他进行坍缩
             }
         }
@@ -225,13 +201,8 @@ namespace TS
             while (cubes.Count > 0) {
                 Cube cube = cubes.First();
                 cubes.Remove(cube);
-                {
-                    // 不需要这部分，
-                    //Destroy(cube.G_Module);//清除已经放置的,邻居找的有问题
-                    //cube.possibleModules = Modules.GetPossiableModules(cube.bit);//重置所有与UpdateBit()重复
-                }
                 collapseCubes.Add(cube);
-                cube.UpdateBit();//!!!!!!!?????
+                cube.UpdateBit();//重新获取可能module
 
                 if (cube.neighborCubes.Count == 0) { cube.SetNeighborCubes(); }
                 foreach (Cube neighborCube in cube.neighborCubes.Values) { 
@@ -249,10 +220,7 @@ namespace TS
             {
                 Cube cube = cubes.First();
                 cubes.Remove(cube);
-                {
-
-                }
-                cube.UpdateBit();//!!!!!!!?????
+                cube.UpdateBit();//重新获取可能module
                 collapseCubes.Add(cube);
 
                 if (cube.module == null)//已经确定模型的邻居，不在继续判断其邻居
@@ -260,15 +228,9 @@ namespace TS
                     if (cube.neighborCubes.Count == 0) { cube.SetNeighborCubes(); }
                     foreach (Cube neighborCube in cube.neighborCubes.Values)
                     {
-                        if (neighborCube != null 
-                            && neighborCube.module!=null //加入已经确定模型的邻居
-                            && !collapseCubes.Contains(neighborCube)) cubes.Add(neighborCube);
+                        if (neighborCube != null && !collapseCubes.Contains(neighborCube)) cubes.Add(neighborCube);
                     }
                 }
-                //else
-                //{
-                //    cube.possibleModules.Add(cube.possibleModules[0]);//此时应该只有一个，因为同样的流程如果不添加会导致一个都没有
-                //}
             }
         }
 

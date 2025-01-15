@@ -74,10 +74,10 @@ namespace TS
 
 
             //Stage4
-            int index = 0;
-            foreach(Cube cube in cubes) { cube.index = index++; }
-            GC.Collect();
 
+
+
+            GC.Collect();
         }
 
         private void Update()

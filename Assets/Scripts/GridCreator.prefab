@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 5818718644179678724}
   - component: {fileID: 3452453324427440194}
   m_Layer: 0
-  m_Name: GameManager
+  m_Name: GridCreator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a0336085e37bf24b9245dad72f8d670, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  radius: 3
+  radius: 4
   relaxTimes: 10
   moduleMaterial: {fileID: 2100000, guid: 6a1143ee683302f4aa628c052723efc1, type: 2}
   G_Modules: {fileID: 919132149155446097, guid: f68c2f5d978d17641a21e1e6f2c51841,
@@ -72,14 +72,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   indicatorGameObject: {fileID: 101630556414132221, guid: 28c6f45f4ddd72d4ab15e653f81b6642,
     type: 3}
-  radius: 0.4
+  radius: 0.2
   maxDistance: 100
   indicatorChoosingMaterial: {fileID: 2100000, guid: 22e3053d948bd1c4685b40e5699404fb,
     type: 2}
   indicatorNotChoosingMaterial: {fileID: 2100000, guid: 67c323b81f28f0b46b13130864fafe17,
     type: 2}
   soundEffect: {fileID: 8300000, guid: 0ceef3b68920b074a8cc6602fb4ee6e2, type: 3}
-  backgroundSound: {fileID: 0}
+  backgroundSound: {fileID: 8300000, guid: 516443fb54fc4894cb82f7cbfcee5553, type: 3}
 --- !u!114 &3452453324427440194
 MonoBehaviour:
   m_ObjectHideFlags: 0

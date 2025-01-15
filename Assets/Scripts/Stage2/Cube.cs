@@ -32,9 +32,6 @@ namespace TS
             centerPosition /= 8;//ø…ªª≥…”““∆
 
         }
-
-
-
         public static List<Cube> GetCubes(List<SubdivideQuad> subdivideQuads,int height)
         {
 
@@ -211,7 +208,5 @@ namespace TS
                 }
             }
         }
-
-        public int index = 0;
     }
 }
